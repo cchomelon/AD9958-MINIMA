@@ -66,13 +66,13 @@ void loop() {
 static inline uint32_t freqToFTW(double _freq) {
   // Frequency Tuning Word
   // FTW = (freq_out / f_ref) * 2^32
-  return static_cast<uint32_t> (_freq * 8589934.592);
+  return (uint32_t) (_freq * 8589934.592);
 }
 
 static inline uint16_t DegToPOW(double _deg) {
   // Phase Offset Word
   // POW = (P_out / 360) * 2^14
-  return static_cast<uint16_t> (_deg * 45.51111111111111);
+  return (uint16_t) (_deg * 45.51111111111111);
 }
 
 static inline uint32_t dBmToASF(double _dBm, double _freq) {
@@ -81,9 +81,9 @@ static inline uint32_t dBmToASF(double _dBm, double _freq) {
   // The following relationship might deviate on different DDS.
   // ASF = exp[ (P + 46.307) / 8.7355 ]
   // return (uint32_t)(pow(2.71828182846, ((_dBm + 68.975) / 8.684)));
-  return static_cast<uint32_t> (exp((_dBm + 68.975) / 8.684));
+  return (uint32_t) (exp((_dBm + 68.975) / 8.684));
   // ASF = exp[ 0.1371 * dBm + 0.2659 * ln(freq) + 7.2040]
-  // return static_cast<uint32_t> (exp((_dBm / C1) - (C3 / C1) - ((C2 * log(_freq))/ C1)));
+  // return (uint32_t) (exp((_dBm / C1) - (C3 / C1) - ((C2 * log(_freq))/ C1)));
   
 }
 
@@ -128,10 +128,10 @@ void setFreq(double freq, uint8_t channel) {
   uint32_t FTW = freqToFTW(freq);
 
 
-  strBuffer[0] = static_cast<uint8_t> ((0xFF000000 & FTW) >> 24);
-  strBuffer[1] = static_cast<uint8_t> ((0x00FF0000 & FTW) >> 16);
-  strBuffer[2] = static_cast<uint8_t> ((0x0000FF00 & FTW) >> 8);
-  strBuffer[3] = static_cast<uint8_t> (0x000000FF & FTW);
+  strBuffer[0] = (uint8_t) ((0xFF000000 & FTW) >> 24);
+  strBuffer[1] = (uint8_t) ((0x00FF0000 & FTW) >> 16);
+  strBuffer[2] = (uint8_t) ((0x0000FF00 & FTW) >> 8);
+  strBuffer[3] = (uint8_t) (0x000000FF & FTW);
 
   unsigned long mid = micros();
 
@@ -157,8 +157,8 @@ void setDeg(double deg, uint8_t channel) {
 
   uint16_t POW = DegToPOW(deg);
 
-  strBuffer[0] = static_cast<uint8_t> ((POW & 0x3F00) >> 8);
-  strBuffer[1] = static_cast<uint8_t> (POW & 0xFF);
+  strBuffer[0] = (uint8_t) ((POW & 0x3F00) >> 8);
+  strBuffer[1] = (uint8_t) (POW & 0xFF);
 
   setChannel(channel);
   sdioWriteReg(PCR, strBuffer, 2);
@@ -172,9 +172,9 @@ void setAmp(double dBm, uint8_t channel) {
   unsigned long calculate = micros();
   uint8_t EMSB = (((ASF & 0x300) >> 8 | 0x10));
   unsigned long mid = micros();
-  strBuffer[0] = static_cast<uint8_t> (0x00);
-  strBuffer[1] = static_cast<uint8_t> (EMSB);
-  strBuffer[2] = static_cast<uint8_t> (ASF & 0xFF);
+  strBuffer[0] = (uint8_t) (0x00);
+  strBuffer[1] = (uint8_t) (EMSB);
+  strBuffer[2] = (uint8_t) (ASF & 0xFF);
 
   setChannel(channel);
   sdioWriteReg(ACR, strBuffer, 3);
@@ -508,8 +508,8 @@ const char HELP_STRING[] PROGMEM =
     "; - Commands Separator"
     "\n"
     "Example:\n"
-    "C0;F100;A-12\n"
-    "Set Frequency to 100 MHz, and Output Power to -12 dBm in Channel 0.\n"
+    "C01;F0100;A0-12\n"
+    "Set Frequency to 100 MHz, and Output Power to -12 dBm in Channel 1.\n"
     "Any number of commands in any order is allowed.";
 
 void readSerialCommand() {
@@ -536,7 +536,7 @@ void readSerialCommand() {
     case 'M': // Update FTW[]
       if (isLocal) {
         if (index < arraySize) {
-          profileFTW[index] = static_cast<uint32_t> (value);
+          profileFTW[index] = (uint32_t) (value);
           Serial.println("Updated FTW[" + String(index) + "] = " + String(value)); 
         } else {
           Serial.println("Index out of range of array. Please allocate correct size.");
@@ -550,7 +550,7 @@ void readSerialCommand() {
     case 'N': // Update ASF[]
       if (isLocal) {
         if (index < arraySize) {
-          profileASF[index] = static_cast<uint32_t> (value);
+          profileASF[index] = (uint32_t) (value);
           Serial.println("Updated ASF[" + String(index) + "] = " + String(value));
         } else {
           Serial.println("Index out of range of array. Please allocate correct size and input again.");
@@ -564,7 +564,7 @@ void readSerialCommand() {
     case 'B': // Update profileChannel[]
       if (isLocal) {
         if (index < arraySize) {
-        profileChannel[index] = static_cast<uint8_t> (value);
+        profileChannel[index] = (uint8_t) (value);
         Serial.println("Updated Channel[" + String(index) + "] = " + String(value));
       } else {
         Serial.println("Index out of range of array. Please allocate correct size and input again.");
@@ -578,7 +578,7 @@ void readSerialCommand() {
     case 'V':
       if (isLocal) {
         if (value > 0 && value <= 10) {
-        arraySize = static_cast<uint8_t> (value);
+        arraySize = (uint8_t) (value);
         allocateArrays(arraySize);
         readProfile();
         Serial.println("Set arraySize to " + String(arraySize));
@@ -627,7 +627,7 @@ void readSerialCommand() {
         Serial.println("The input channel is not selected.");
         }
         if (inRange(value, MIN_FREQ, MAX_FREQ)) {
-        serialFrequency = static_cast<double> (value);
+        serialFrequency = (double) (value);
         setFreq(serialFrequency, serialChannel);
 
         Serial.print(F("Set Freq: "));
@@ -645,7 +645,7 @@ void readSerialCommand() {
     case 'A': // Amplitude, dBm
       if (isLocal) {
         if (inRange(value, MIN_AMPL, MAX_AMPL)) {
-        serialAmplitude = static_cast<double> (value);
+        serialAmplitude = (double) (value);
         setAmp(serialAmplitude, serialChannel);
 
         Serial.print(F("Set Amplitude: "));
@@ -661,7 +661,7 @@ void readSerialCommand() {
 
     case 'U':
       if (isLocal) {
-        CALIBRATION_setAmp(static_cast<uint32_t>(value), serialChannel);
+        CALIBRATION_setAmp((uint32_t)(value), serialChannel);
       } else {
         sendToSlaves(data[i], strlen(data[i]));
       }
@@ -669,7 +669,7 @@ void readSerialCommand() {
 
     case 'I':
       if (isLocal) {
-        CALIBRATION_setFreq(static_cast<uint32_t>(value), serialChannel);
+        CALIBRATION_setFreq((uint32_t)(value), serialChannel);
       }
 
     case 'X':
@@ -807,7 +807,7 @@ void receiveEvent(int count) {
 
         case 'V':
           if (value > 0 && value <= 10) {
-            arraySize = static_cast<uint8_t> (value);
+            arraySize = (uint8_t) (value);
             allocateArrays(arraySize);
             readProfile();
             slaveResponse += "Set arraySize to " + String(arraySize);
